@@ -1,3 +1,5 @@
+'use client'
+
 import { useCallback, useEffect } from 'react'
 import { useEmployeeStore } from '@/store/useEmployeeStore'
 import { fetchEmployees } from '@/lib/api'
@@ -54,6 +56,16 @@ interface UseEmployeesReturn {
 /**
  * Custom hook for employee management with Zustand store integration
  * Provides loading, error, and data states with proper TypeScript typing
+ * 
+ * Features:
+ * - Automatic data fetching on mount
+ * - Loading and error state management
+ * - Employee CRUD operations
+ * - Bookmark management
+ * - Filtering and search functionality
+ * - Pagination support
+ * 
+ * @returns UseEmployeesReturn - Complete employee management interface
  */
 export function useEmployees(): UseEmployeesReturn {
   const store = useEmployeeStore()
@@ -114,7 +126,12 @@ export function useEmployees(): UseEmployeesReturn {
       const totalPages = Math.ceil(employees.length / itemsPerPage)
       store.setTotalPages(totalPages)
     } catch (error) {
-      store.setError(error instanceof Error ? error.message : 'Failed to fetch employees')
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to fetch employees'
+      
+      store.setError(errorMessage)
+      console.error('Error fetching employees:', error)
     } finally {
       store.setLoading(false)
     }
