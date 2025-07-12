@@ -1,4 +1,4 @@
-import { Star, StarHalf } from '@tabler/icons-react'
+import { IconStar, IconStarHalf } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import type { PerformanceRating } from '@/types'
 
@@ -29,7 +29,7 @@ export function StarRating({
     // Render full stars
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <Star
+        <IconStar
           key={`full-${i}`}
           className={cn(
             'fill-yellow-400 text-yellow-400',
@@ -42,7 +42,7 @@ export function StarRating({
     // Render half star if needed
     if (hasHalfStar) {
       stars.push(
-        <StarHalf
+        <IconStarHalf
           key="half"
           className={cn(
             'fill-yellow-400 text-yellow-400',
@@ -56,7 +56,7 @@ export function StarRating({
     const emptyStars = 5 - Math.ceil(rating)
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-        <Star
+        <IconStar
           key={`empty-${i}`}
           className={cn(
             'text-gray-300',

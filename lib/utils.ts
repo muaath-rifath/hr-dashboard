@@ -3,11 +3,6 @@ import { twMerge } from "tailwind-merge"
 import type { 
   Employee, 
   PerformanceRating, 
-  Address, 
-  Project, 
-  Feedback, 
-  Certification, 
-  EmergencyContact,
   FilterOptions,
   SearchResult
 } from "@/types"
@@ -428,7 +423,7 @@ export function generateId(): string {
 /**
  * Debounce function for search inputs
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

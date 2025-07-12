@@ -25,7 +25,23 @@ export async function fetchUsers(limit: number = 20) {
 /**
  * Transform DummyJSON user data to Employee format
  */
-export function transformUserToEmployee(user: any): Employee {
+interface DummyUser {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  age: number
+  phone: string
+  image: string
+  address: {
+    address: string
+    city: string
+    state: string
+    postalCode: string
+  }
+}
+
+export function transformUserToEmployee(user: DummyUser): Employee {
   // Generate random department
   const departments = Object.values(Department)
   const randomDepartment = departments[Math.floor(Math.random() * departments.length)] as Department
@@ -93,7 +109,7 @@ export function transformUserToEmployee(user: any): Employee {
     },
     bio: `${user.firstName} ${user.lastName} is a ${randomDepartment} professional with ${Math.floor(Math.random() * 10) + 1} years of experience.`,
     performanceRating: randomRating,
-    projectHistory: generateProjectHistory(user.id),
+    projectHistory: generateProjectHistory(),
     feedback: generateFeedback(user.id),
     hireDate: hireDate.toISOString().split('T')[0],
     salary,
@@ -114,7 +130,7 @@ export function transformUserToEmployee(user: any): Employee {
 /**
  * Generate mock project history
  */
-function generateProjectHistory(employeeId: number) {
+function generateProjectHistory() {
   const projectTemplates = [
     {
       name: 'Digital Transformation Initiative',
@@ -147,7 +163,7 @@ function generateProjectHistory(employeeId: number) {
     .sort(() => 0.5 - Math.random())
     .slice(0, numProjects)
   
-  return selectedProjects.map((project, index) => ({
+  return selectedProjects.map((project) => ({
     id: generateId(),
     name: project.name,
     description: project.description,

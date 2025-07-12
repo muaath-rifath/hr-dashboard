@@ -27,11 +27,11 @@ interface ThemeState {
 // Auth Store
 export const useAuthStore = create<AuthState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
-      login: async (email: string, password: string) => {
+      login: async (email: string) => {
         set({ isLoading: true })
         try {
           // TODO: Implement actual login logic
@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
 // Dashboard Store
 export const useDashboardStore = create<DashboardState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       stats: null,
       isLoading: false,
       fetchStats: async () => {
@@ -80,6 +80,10 @@ export const useDashboardStore = create<DashboardState>()(
             pendingRequests: 12,
             thisMonthHires: 5,
             thisMonthTerminations: 2,
+            averagePerformanceRating: 4.2,
+            totalSalary: 8500000,
+            departmentDistribution: [],
+            performanceDistribution: [],
           }
           set({ stats: mockStats })
         } catch (error) {
@@ -99,12 +103,13 @@ export const useDashboardStore = create<DashboardState>()(
 // Theme Store
 export const useThemeStore = create<ThemeState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       theme: 'light',
       toggleTheme: () => {
-        const currentTheme = get().theme
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light'
-        set({ theme: newTheme })
+        set((state) => {
+          const newTheme = state.theme === 'light' ? 'dark' : 'light'
+          return { theme: newTheme }
+        })
         // Update document class for Tailwind dark mode
         document.documentElement.classList.toggle('dark')
       },

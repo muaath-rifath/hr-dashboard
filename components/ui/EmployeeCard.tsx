@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { StarRating } from './StarRating'
 import { formatCurrency, getFullName, getInitials } from '@/lib/utils'
 import type { Employee } from '@/types'
+import Image from 'next/image'
 
 interface EmployeeCardProps {
   employee: Employee
@@ -26,17 +27,20 @@ export function EmployeeCard({
 
   return (
     <div className={cn(
-      'bg-card border rounded-lg p-6 hover:shadow-md transition-shadow',
+      'bg-white dark:bg-gray-900 border rounded-lg p-6 hover:shadow-md transition-shadow',
       className
     )}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {employee.avatar ? (
-            <img
+            <Image
               src={employee.avatar}
               alt={fullName}
               className="w-12 h-12 rounded-full object-cover"
+              width={48}
+              height={48}
+              loading="lazy"
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
