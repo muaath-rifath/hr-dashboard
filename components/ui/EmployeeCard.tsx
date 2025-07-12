@@ -4,7 +4,7 @@ import { StarRating } from './StarRating'
 import { formatCurrency, getFullName, getInitials } from '@/lib/utils'
 import type { Employee } from '@/types'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface EmployeeCardProps {
   employee: Employee
@@ -29,7 +29,7 @@ export function EmployeeCard({
 
   return (
     <div className={cn(
-      'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden min-w-80 max-w-md w-full flex flex-col items-center p-6',
+      'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden w-full min-w-80 flex flex-col items-center p-6',
       className
     )}>
       {/* Avatar */}
@@ -97,21 +97,7 @@ export function EmployeeCard({
       {employee.skills && employee.skills.length > 0 && (
         <div className="w-full mb-4">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</p>
-          <div className="flex flex-wrap gap-1.5">
-            {employee.skills.slice(0, 3).map((skill, index) => (
-              <span
-                key={index}
-                className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full border border-blue-200 dark:border-blue-800"
-              >
-                {skill}
-              </span>
-            ))}
-            {employee.skills.length > 3 && (
-              <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full">
-                +{employee.skills.length - 3} more
-              </span>
-            )}
-          </div>
+          <SkillsRow skills={employee.skills} />
         </div>
       )}
       {/* Action Buttons */}
@@ -142,5 +128,105 @@ export function EmployeeCard({
         </button>
       </div>
     </div>
+  )
+}
+
+// --- SkillsRow component ---
+function SkillsRow({ skills }: { skills: string[] }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const measureRef = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(skills.length)
+
+  useEffect(() => {
+    if (!measureRef.current || expanded) return
+    const container = measureRef.current
+    const skillTags = Array.from(container.children) as HTMLDivElement[]
+    let firstLineBottom = 0
+    let secondLineBottom = 0
+    let count = skills.length
+    let lines = 1
+    for (let i = 0; i < skillTags.length; i++) {
+      const rect = skillTags[i].getBoundingClientRect()
+      if (i === 0) firstLineBottom = rect.bottom
+      if (lines === 1 && rect.top > firstLineBottom + 1) {
+        lines = 2
+        secondLineBottom = rect.bottom
+      }
+      if (lines === 2 && rect.top > secondLineBottom + 1) {
+        count = i
+        break
+      }
+    }
+    setVisibleCount(count)
+  }, [skills, expanded])
+
+  // Hidden measurement row for 2 lines
+  const needsMore = !expanded && visibleCount < skills.length
+  const measureSkills = needsMore
+    ? [...skills.slice(0, visibleCount - 1), '+N more']
+    : skills
+
+  return (
+    <>
+      {/* Hidden measurement row */}
+      {!expanded && (
+        <div className="flex flex-wrap gap-1.5 invisible h-0 absolute pointer-events-none" ref={measureRef} aria-hidden>
+          {measureSkills.map((skill, index) => (
+            <span
+              key={index}
+              className="px-2.5 py-1 text-xs font-medium rounded-full border"
+              style={{
+                minWidth: '0',
+                maxWidth: '100%',
+                borderColor: skill === '+N more' ? '#d1d5db' : '#bfdbfe',
+                background: skill === '+N more' ? '#f3f4f6' : '#eff6ff',
+                color: skill === '+N more' ? '#6b7280' : '#2563eb',
+              }}
+            >
+              {skill === '+N more' ? `+${skills.length - (visibleCount - 1)} more` : skill}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-1.5" ref={containerRef}>
+        {needsMore
+          ? [
+              ...skills.slice(0, visibleCount - 1).map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full border border-blue-200 dark:border-blue-800"
+                >
+                  {skill}
+                </span>
+              )),
+              <button
+                key="more"
+                type="button"
+                className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                onClick={() => setExpanded(true)}
+              >
+                +{skills.length - (visibleCount - 1)} more
+              </button>,
+            ]
+          : skills.map((skill, index) => (
+              <span
+                key={index}
+                className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full border border-blue-200 dark:border-blue-800"
+              >
+                {skill}
+              </span>
+            ))}
+        {expanded && skills.length > visibleCount && (
+          <button
+            type="button"
+            className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition ml-1"
+            onClick={() => setExpanded(false)}
+          >
+            Show less
+          </button>
+        )}
+      </div>
+    </>
   )
 } 
