@@ -86,7 +86,7 @@ export function StarRating({
         {renderStars()}
       </div>
       {showLabel && (
-        <span className="text-sm text-muted-foreground ml-1">
+        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
           {getRatingLabel(rating)}
         </span>
       )}

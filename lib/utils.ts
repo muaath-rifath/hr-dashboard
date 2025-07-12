@@ -41,11 +41,11 @@ export function formatRating(rating: PerformanceRating): string {
  */
 export function getRatingColor(rating: PerformanceRating): string {
   const colors: Record<PerformanceRating, string> = {
-    1: 'bg-error text-error-foreground',
-    2: 'bg-warning text-warning-foreground',
-    3: 'bg-secondary text-secondary-foreground',
-    4: 'bg-success text-success-foreground',
-    5: 'bg-primary text-primary-foreground'
+    1: 'bg-red-500 text-white',
+    2: 'bg-yellow-500 text-white',
+    3: 'bg-gray-500 text-white',
+    4: 'bg-green-500 text-white',
+    5: 'bg-blue-500 text-white'
   }
   return colors[rating]
 }

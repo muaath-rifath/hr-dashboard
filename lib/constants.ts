@@ -26,29 +26,29 @@ export const RATING_COLORS: Record<PerformanceRating, {
   border: string
 }> = {
   1: {
-    bg: 'bg-error/10',
-    text: 'text-error',
-    border: 'border-error/20'
+    bg: 'bg-red-50 dark:bg-red-900/20',
+    text: 'text-red-600 dark:text-red-400',
+    border: 'border-red-200 dark:border-red-800'
   },
   2: {
-    bg: 'bg-warning/10',
-    text: 'text-warning',
-    border: 'border-warning/20'
+    bg: 'bg-yellow-50 dark:bg-yellow-900/20',
+    text: 'text-yellow-600 dark:text-yellow-400',
+    border: 'border-yellow-200 dark:border-yellow-800'
   },
   3: {
-    bg: 'bg-secondary/10',
-    text: 'text-secondary-foreground',
-    border: 'border-secondary/20'
+    bg: 'bg-gray-50 dark:bg-gray-800',
+    text: 'text-gray-600 dark:text-gray-300',
+    border: 'border-gray-200 dark:border-gray-700'
   },
   4: {
-    bg: 'bg-success/10',
-    text: 'text-success',
-    border: 'border-success/20'
+    bg: 'bg-green-50 dark:bg-green-900/20',
+    text: 'text-green-600 dark:text-green-400',
+    border: 'border-green-200 dark:border-green-800'
   },
   5: {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20'
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    text: 'text-blue-600 dark:text-blue-400',
+    border: 'border-blue-200 dark:border-blue-800'
   }
 }
 

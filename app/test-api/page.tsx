@@ -15,8 +15,8 @@ export default function TestAPIPage() {
       try {
         setLoading(true)
         setError(null)
-        const data = await fetchEmployees(10) // Fetch 10 employees
-        setEmployees(data)
+        const data = await fetchEmployees(1, 10) // Fetch 10 employees
+        setEmployees(data.employees)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch employees')
         console.error('Error in test page:', err)

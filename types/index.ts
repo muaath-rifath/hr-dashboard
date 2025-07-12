@@ -36,6 +36,7 @@ export interface Employee {
   skills: string[]
   certifications: Certification[]
   emergencyContact: EmergencyContact
+  xHandle?: string // Optional X/Twitter handle
 }
 
 export type EmployeeStatus = 'active' | 'on_leave' | 'terminated' | 'probation' | 'contractor'

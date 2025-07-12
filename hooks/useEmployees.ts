@@ -119,11 +119,18 @@ export function useEmployees(): UseEmployeesReturn {
       store.setLoading(true)
       store.setError(null)
       
-      const employees = await fetchEmployees(50) // Fetch 50 employees
-      store.setEmployees(employees)
+      const result = await fetchEmployees(
+        currentPage,
+        itemsPerPage,
+        searchTerm,
+        selectedDepartment || undefined
+      )
       
-      // Calculate total pages
-      const totalPages = Math.ceil(employees.length / itemsPerPage)
+      console.log('[useEmployees] Received employees:', result.employees.length)
+      store.setEmployees(result.employees)
+      
+      // Update pagination
+      const totalPages = Math.ceil(result.total / itemsPerPage)
       store.setTotalPages(totalPages)
     } catch (error) {
       const errorMessage = error instanceof Error 
@@ -135,11 +142,13 @@ export function useEmployees(): UseEmployeesReturn {
     } finally {
       store.setLoading(false)
     }
-  }, [store, itemsPerPage])
+  }, [store, currentPage, itemsPerPage, searchTerm, selectedDepartment])
   
   // Auto-fetch employees on mount
   useEffect(() => {
+    console.log('[useEmployees] useEffect triggered:', { employeesLength: employees.length, loading })
     if (employees.length === 0 && !loading) {
+      console.log('[useEmployees] Fetching employees...')
       fetchEmployeesData()
     }
   }, [fetchEmployeesData, employees.length, loading])
