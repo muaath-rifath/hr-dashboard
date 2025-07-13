@@ -19,7 +19,7 @@ export function TopNavigation() {
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">HR</span>
             </div>
-            <h1 className="text-lg font-semibold hidden sm:block">HR Dashboard</h1>
+            <h1 className="text-lg font-semibold">HR Dashboard</h1>
           </div>
 
           {/* Center Navigation - Hidden on mobile, visible on tablet/desktop */}

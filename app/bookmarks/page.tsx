@@ -1,14 +1,26 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useEmployeeStore } from '@/lib/store'
 import { EmployeeCard } from '@/components/employee-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Bookmark, Users, Trash2 } from 'lucide-react'
 import { Employee } from '@/types'
 
 export default function BookmarksPage() {
+  const [isAlertOpen, setIsAlertOpen] = useState(false)
   const {
     employees,
     bookmarkedIds,
@@ -45,9 +57,8 @@ export default function BookmarksPage() {
   }
 
   const handleClearAllBookmarks = () => {
-    if (confirm('Are you sure you want to remove all bookmarks?')) {
-      clearBookmarks()
-    }
+    clearBookmarks()
+    setIsAlertOpen(false)
   }
 
   return (
@@ -65,14 +76,33 @@ export default function BookmarksPage() {
             </p>
           </div>
           {bookmarkedEmployees.length > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={handleClearAllBookmarks}
-              className="gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Clear All
-            </Button>
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear All Bookmarks</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to remove all bookmarks? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleClearAllBookmarks}
+                    className="bg-destructive text-white hover:bg-destructive/90"
+                  >
+                    Clear All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
 
