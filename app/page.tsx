@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useEmployeeStore } from '@/lib/store'
 import { EmployeeCard } from '@/components/employee-card'
-import { SearchFilters } from '@/components/search-filters'
+import { SearchBar } from '@/components/search-bar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Users, Building2, TrendingUp, AlertCircle } from 'lucide-react'
+import { Loader2, Users, Building2, Star, AlertCircle } from 'lucide-react'
 import { Employee } from '@/types'
 
 export default function EmployeesPage() {
@@ -68,6 +68,7 @@ export default function EmployeesPage() {
     setSearchTerm('')
     setSelectedDepartment(null)
     setCurrentPage(1)
+    setViewMode('all')
   }
 
   const handleRefresh = () => {
@@ -77,6 +78,9 @@ export default function EmployeesPage() {
   // Calculate stats
   const totalBookmarked = Array.from(bookmarkedIds).length
   const activeDepartments = new Set(employees.map(emp => emp.department)).size
+  const averageRating = employees.length > 0 
+    ? (employees.reduce((sum, emp) => sum + emp.performanceRating, 0) / employees.length).toFixed(1)
+    : 0
 
   return (
     <div className="w-full px-4 py-8 space-y-8">
@@ -96,7 +100,7 @@ export default function EmployeesPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
@@ -117,8 +121,17 @@ export default function EmployeesPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{averageRating}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Bookmarked</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalBookmarked}</div>
@@ -127,29 +140,16 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      {/* View Mode Toggle */}
-      <div className="flex gap-2">
-        <Button
-          variant={viewMode === 'all' ? 'default' : 'outline'}
-          onClick={() => setViewMode('all')}
-        >
-          All Employees ({filteredEmployees.length})
-        </Button>
-        <Button
-          variant={viewMode === 'bookmarked' ? 'default' : 'outline'}
-          onClick={() => setViewMode('bookmarked')}
-        >
-          Bookmarked ({totalBookmarked})
-        </Button>
-      </div>
-
       {/* Search and Filters */}
-      <SearchFilters
+      <SearchBar
         searchTerm={searchTerm}
         selectedDepartment={selectedDepartment}
         onSearchChange={setSearchTerm}
         onDepartmentChange={setSelectedDepartment}
         onClearFilters={handleClearFilters}
+        showBookmarkFilter={true}
+        showBookmarkedOnly={viewMode === 'bookmarked'}
+        onBookmarkFilterChange={(showBookmarked) => setViewMode(showBookmarked ? 'bookmarked' : 'all')}
       />
 
       {/* Loading State */}
@@ -213,10 +213,13 @@ export default function EmployeesPage() {
                 <p className="text-sm text-muted-foreground">
                   Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayEmployees.length)} of {displayEmployees.length} employees
                 </p>
+                <p className="text-sm text-muted-foreground">
+                  {displayEmployees.length !== employees.length && `Filtered from ${employees.length} total`}
+                </p>
               </div>
 
               {/* Employee Cards Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {paginatedEmployees.map((employee) => (
                   <EmployeeCard
                     key={employee.id}

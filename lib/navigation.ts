@@ -1,4 +1,4 @@
-import { Home, Users, Bookmark, BarChart3, Settings, LucideIcon } from 'lucide-react'
+import { Home, Bookmark, BarChart3, Settings, LucideIcon } from 'lucide-react'
 
 export interface NavigationItem {
   name: string
@@ -12,12 +12,6 @@ export const navigationItems: NavigationItem[] = [
     name: 'Dashboard',
     href: '/',
     icon: Home,
-    description: 'Overview and quick stats'
-  },
-  {
-    name: 'Employees',
-    href: '/employees',
-    icon: Users,
     description: 'Employee directory and management'
   },
   {
