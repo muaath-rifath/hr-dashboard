@@ -102,11 +102,11 @@ export function EmployeeCard({
         </Button>
         <Button
           size="sm"
-          variant={isBookmarked ? "default" : "outline"}
+          variant="outline"
           onClick={() => onBookmark?.(employee)}
           className="h-8 sm:h-9 px-2 sm:px-3"
         >
-          <Bookmark className={cn("w-3 h-3 sm:w-4 sm:h-4", isBookmarked && "fill-current")} />
+          <Bookmark className={cn("w-3 h-3 sm:w-4 sm:h-4", isBookmarked && "fill-black dark:fill-white")} />
         </Button>
         <Button
           size="sm"
