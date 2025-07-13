@@ -36,7 +36,6 @@ export interface Employee {
   skills: string[]
   certifications: Certification[]
   emergencyContact: EmergencyContact
-  xHandle?: string // Optional X/Twitter handle
 }
 
 export type EmployeeStatus = 'active' | 'on_leave' | 'terminated' | 'probation' | 'contractor'
@@ -99,6 +98,7 @@ export interface Certification {
   issueDate: string
   expiryDate?: string
   credentialId?: string
+  category?: string
 }
 
 // Emergency contact interface
@@ -107,14 +107,6 @@ export interface EmergencyContact {
   relationship: string
   phone: string
   email?: string
-}
-
-// Bookmarked employee interface
-export interface BookmarkedEmployee {
-  employeeId: string
-  bookmarkedAt: string
-  notes?: string
-  tags: string[]
 }
 
 // Filter options interface for search functionality
@@ -140,102 +132,20 @@ export interface FilterOptions {
   sortOrder?: 'asc' | 'desc'
 }
 
-// Department types
-export interface DepartmentInfo {
-  id: string
-  name: string
-  description: string
-  managerId: string
-  employeeCount: number
-  budget: number
-  location: string
-  departmentHead: Employee
-}
-
-// Employee types (legacy - keeping for backward compatibility)
-export interface EmployeeLegacy {
-  id: string
-  userId: string
-  employeeId: string
-  departmentId: string
-  position: string
-  salary: number
-  startDate: string
-  endDate?: string
-  managerId?: string
-  status: EmployeeStatus
-}
-
-// Leave types
-export interface LeaveRequest {
-  id: string
-  employeeId: string
-  type: LeaveType
-  startDate: string
-  endDate: string
-  reason: string
-  status: LeaveStatus
-  approvedBy?: string
-  approvedAt?: string
-}
-
-export type LeaveType = 'vacation' | 'sick' | 'personal' | 'maternity' | 'paternity' | 'bereavement' | 'jury_duty'
-export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
-
 // Dashboard types
 export interface DashboardStats {
   totalEmployees: number
   activeEmployees: number
   departments: number
   pendingRequests: number
-  thisMonthHires: number
-  thisMonthTerminations: number
-  averagePerformanceRating: number
-  totalSalary: number
-  departmentDistribution: DepartmentStats[]
-  performanceDistribution: PerformanceStats[]
+  averageSalary: number
+  topDepartments: Array<{
+    name: string
+    count: number
+  }>
 }
 
-export interface DepartmentStats {
-  department: Department
-  count: number
-  percentage: number
-}
-
-export interface PerformanceStats {
-  rating: PerformanceRating
-  count: number
-  percentage: number
-}
-
-export interface ChartData {
-  labels: string[]
-  datasets: {
-    label: string
-    data: number[]
-    backgroundColor?: string
-    borderColor?: string
-  }[]
-}
-
-// API Response types
-export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-}
-
-// Search and filter types
+// Search result type
 export interface SearchResult<T> {
   items: T[]
   total: number
@@ -243,5 +153,3 @@ export interface SearchResult<T> {
   limit: number
   totalPages: number
 }
-
- 

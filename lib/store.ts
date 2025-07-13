@@ -1,128 +1,202 @@
 import { create } from 'zustand'
-import { devtools } from 'zustand/middleware'
-import type { User, DashboardStats } from '@/types'
+import { persist } from 'zustand/middleware'
+import type { Employee, Department } from '@/types'
+import { fetchEmployees } from '@/lib/api'
 
-interface AuthState {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  setUser: (user: User) => void
+interface EmployeeState {
+  // Data
+  employees: Employee[]
+  bookmarkedIds: Set<string>
+  
+  // UI State
+  loading: boolean
+  error: string | null
+  
+  // Search and Filters
+  searchTerm: string
+  selectedDepartment: Department | null
+  
+  // Pagination
+  currentPage: number
+  itemsPerPage: number
+  totalEmployees: number
 }
 
-interface DashboardState {
-  stats: DashboardStats | null
-  isLoading: boolean
-  fetchStats: () => Promise<void>
-  setStats: (stats: DashboardStats) => void
+interface EmployeeActions {
+  // Data actions
+  setEmployees: (employees: Employee[]) => void
+  addEmployee: (employee: Employee) => void
+  updateEmployee: (id: string, updates: Partial<Employee>) => void
+  removeEmployee: (id: string) => void
+  
+  // Bookmark actions
+  toggleBookmark: (employeeId: string) => void
+  clearBookmarks: () => void
+  
+  // UI state actions
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  
+  // Search and filter actions
+  setSearchTerm: (term: string) => void
+  setSelectedDepartment: (department: Department | null) => void
+  clearFilters: () => void
+  
+  // Pagination actions
+  setCurrentPage: (page: number) => void
+  setItemsPerPage: (items: number) => void
+  setTotalEmployees: (total: number) => void
+  
+  // Computed getters
+  getBookmarkedEmployees: () => Employee[]
+  getFilteredEmployees: () => Employee[]
+  
+  // API actions
+  fetchEmployeesData: () => Promise<void>
 }
 
-interface ThemeState {
-  theme: 'light' | 'dark'
-  toggleTheme: () => void
-  setTheme: (theme: 'light' | 'dark') => void
-}
+type EmployeeStore = EmployeeState & EmployeeActions
 
-// Auth Store
-export const useAuthStore = create<AuthState>()(
-  devtools(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-      login: async (email: string) => {
-        set({ isLoading: true })
-        try {
-          // TODO: Implement actual login logic
-          const mockUser: User = {
-            id: '1',
-            name: 'John Doe',
-            email,
-            role: 'admin',
-            department: 'HR',
-            position: 'HR Manager',
-            hireDate: '2023-01-15',
-            status: 'active',
-          }
-          set({ user: mockUser, isAuthenticated: true })
-        } catch (error) {
-          console.error('Login failed:', error)
-        } finally {
-          set({ isLoading: false })
-        }
-      },
-      logout: () => {
-        set({ user: null, isAuthenticated: false })
-      },
-      setUser: (user: User) => {
-        set({ user, isAuthenticated: true })
-      },
-    }),
-    { name: 'auth-store' }
-  )
-)
-
-// Dashboard Store
-export const useDashboardStore = create<DashboardState>()(
-  devtools(
-    (set) => ({
-      stats: null,
-      isLoading: false,
-      fetchStats: async () => {
-        set({ isLoading: true })
-        try {
-          // TODO: Implement actual API call
-          const mockStats: DashboardStats = {
-            totalEmployees: 150,
-            activeEmployees: 142,
-            departments: 8,
-            pendingRequests: 12,
-            thisMonthHires: 5,
-            thisMonthTerminations: 2,
-            averagePerformanceRating: 4.2,
-            totalSalary: 8500000,
-            departmentDistribution: [],
-            performanceDistribution: [],
-          }
-          set({ stats: mockStats })
-        } catch (error) {
-          console.error('Failed to fetch stats:', error)
-        } finally {
-          set({ isLoading: false })
-        }
-      },
-      setStats: (stats: DashboardStats) => {
-        set({ stats })
-      },
-    }),
-    { name: 'dashboard-store' }
-  )
-)
-
-// Theme Store
-export const useThemeStore = create<ThemeState>()(
-  devtools(
-    (set) => ({
-      theme: 'light',
-      toggleTheme: () => {
+const useEmployeeStore = create<EmployeeStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      employees: [],
+      bookmarkedIds: new Set(),
+      loading: false,
+      error: null,
+      searchTerm: '',
+      selectedDepartment: null,
+      currentPage: 1,
+      itemsPerPage: 12,
+      totalEmployees: 0,
+      
+      // Data actions
+      setEmployees: (employees) => set({ employees }),
+      
+      addEmployee: (employee) => 
+        set((state) => ({ 
+          employees: [...state.employees, employee] 
+        })),
+      
+      updateEmployee: (id, updates) =>
+        set((state) => ({
+          employees: state.employees.map(emp => 
+            emp.id === id ? { ...emp, ...updates } : emp
+          )
+        })),
+      
+      removeEmployee: (id) =>
         set((state) => {
-          const newTheme = state.theme === 'light' ? 'dark' : 'light'
-          return { theme: newTheme }
-        })
-        // Update document class for Tailwind dark mode
-        document.documentElement.classList.toggle('dark')
+          const newBookmarkedIds = new Set(state.bookmarkedIds)
+          newBookmarkedIds.delete(id)
+          return {
+            employees: state.employees.filter(emp => emp.id !== id),
+            bookmarkedIds: newBookmarkedIds
+          }
+        }),
+      
+      // Bookmark actions
+      toggleBookmark: (employeeId) =>
+        set((state) => {
+          const newBookmarkedIds = new Set(state.bookmarkedIds)
+          if (newBookmarkedIds.has(employeeId)) {
+            newBookmarkedIds.delete(employeeId)
+          } else {
+            newBookmarkedIds.add(employeeId)
+          }
+          return { bookmarkedIds: newBookmarkedIds }
+        }),
+      
+      clearBookmarks: () => set({ bookmarkedIds: new Set() }),
+      
+      // UI state actions
+      setLoading: (loading) => set({ loading }),
+      setError: (error) => set({ error }),
+      
+      // Search and filter actions
+      setSearchTerm: (searchTerm) => set({ searchTerm, currentPage: 1 }),
+      setSelectedDepartment: (selectedDepartment) => set({ selectedDepartment, currentPage: 1 }),
+      clearFilters: () => set({ searchTerm: '', selectedDepartment: null, currentPage: 1 }),
+      
+      // Pagination actions
+      setCurrentPage: (currentPage) => set({ currentPage }),
+      setItemsPerPage: (itemsPerPage) => set({ itemsPerPage, currentPage: 1 }),
+      setTotalEmployees: (totalEmployees) => set({ totalEmployees }),
+      
+      // Computed getters
+      getBookmarkedEmployees: () => {
+        const { employees, bookmarkedIds } = get()
+        return employees.filter(emp => bookmarkedIds.has(emp.id))
       },
-      setTheme: (theme: 'light' | 'dark') => {
-        set({ theme })
-        // Update document class for Tailwind dark mode
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
+      
+      getFilteredEmployees: () => {
+        const { employees, searchTerm, selectedDepartment } = get()
+        let filtered = employees
+        
+        // Apply search filter
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase()
+          filtered = filtered.filter(emp => 
+            `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(term) ||
+            emp.email.toLowerCase().includes(term) ||
+            emp.department.toLowerCase().includes(term) ||
+            emp.skills.some(skill => skill.toLowerCase().includes(term))
+          )
         }
+        
+        // Apply department filter
+        if (selectedDepartment) {
+          filtered = filtered.filter(emp => emp.department === selectedDepartment)
+        }
+        
+        return filtered
       },
+      
+      // API actions
+      fetchEmployeesData: async () => {
+        const { setLoading, setError, setEmployees, setTotalEmployees, currentPage, itemsPerPage, searchTerm, selectedDepartment } = get()
+        
+        try {
+          setLoading(true)
+          setError(null)
+          
+          const result = await fetchEmployees(
+            currentPage,
+            itemsPerPage,
+            searchTerm || undefined,
+            selectedDepartment || undefined
+          )
+          
+          setEmployees(result.employees)
+          setTotalEmployees(result.total)
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to fetch employees'
+          setError(errorMessage)
+        } finally {
+          setLoading(false)
+        }
+      }
     }),
-    { name: 'theme-store' }
+    {
+      name: 'employee-store',
+      partialize: (state) => ({
+        bookmarkedIds: Array.from(state.bookmarkedIds), // Convert Set to Array for serialization
+        searchTerm: state.searchTerm,
+        selectedDepartment: state.selectedDepartment,
+        itemsPerPage: state.itemsPerPage
+      }),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...(persistedState || {}),
+        bookmarkedIds: new Set(
+          Array.isArray((persistedState as Record<string, unknown>)?.bookmarkedIds) 
+            ? (persistedState as Record<string, unknown>).bookmarkedIds as string[]
+            : []
+        ),
+      }),
+    }
   )
-) 
+)
+
+export { useEmployeeStore }
