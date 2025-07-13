@@ -21,6 +21,9 @@ interface EmployeeState {
   currentPage: number
   itemsPerPage: number
   totalEmployees: number
+  
+  // User Preferences
+  sortOrder: string
 }
 
 interface EmployeeActions {
@@ -49,6 +52,9 @@ interface EmployeeActions {
   setItemsPerPage: (items: number) => void
   setTotalEmployees: (total: number) => void
   
+  // Preference actions
+  setSortOrder: (order: string) => void
+  
   // Computed getters
   getBookmarkedEmployees: () => Employee[]
   getFilteredEmployees: () => Employee[]
@@ -74,6 +80,7 @@ const useEmployeeStore = create<EmployeeStore>()(
       currentPage: 1,
       itemsPerPage: 12,
       totalEmployees: 0,
+      sortOrder: 'name-asc',
       
       // Data actions
       setEmployees: (employees) => set({ employees }),
@@ -128,6 +135,9 @@ const useEmployeeStore = create<EmployeeStore>()(
       setCurrentPage: (currentPage) => set({ currentPage }),
       setItemsPerPage: (itemsPerPage) => set({ itemsPerPage, currentPage: 1 }),
       setTotalEmployees: (totalEmployees) => set({ totalEmployees }),
+      
+      // Preference actions
+      setSortOrder: (sortOrder) => set({ sortOrder }),
       
       // Computed getters
       getBookmarkedEmployees: () => {
@@ -202,7 +212,8 @@ const useEmployeeStore = create<EmployeeStore>()(
         searchTerm: state.searchTerm,
         selectedDepartment: state.selectedDepartment,
         selectedPerformanceRating: state.selectedPerformanceRating,
-        itemsPerPage: state.itemsPerPage
+        itemsPerPage: state.itemsPerPage,
+        sortOrder: state.sortOrder
       }),
       merge: (persistedState, currentState) => ({
         ...currentState,

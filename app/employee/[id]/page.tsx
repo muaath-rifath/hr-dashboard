@@ -27,7 +27,7 @@ import { Employee, PerformanceRating } from '@/types'
 import { fetchEmployeeById } from '@/lib/api'
 import { formatCurrency, getFullName, getInitials } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { useEmployeeStore } from '@/lib/store'
+import { useBookmarks } from '@/hooks'
 
 export default function EmployeeDetailsPage() {
   const params = useParams()
@@ -39,9 +39,8 @@ export default function EmployeeDetailsPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Get bookmark functionality from store
-  const { bookmarkedIds, toggleBookmark } = useEmployeeStore()
-  const safeBookmarkedIds = bookmarkedIds instanceof Set ? bookmarkedIds : new Set()
-  const isBookmarked = employee ? safeBookmarkedIds.has(employee.id) : false
+  const { isBookmarked, toggleBookmark } = useBookmarks()
+  const isEmployeeBookmarked = employee ? isBookmarked(employee.id) : false
 
   useEffect(() => {
     const fetchEmployee = async () => {
@@ -65,7 +64,7 @@ export default function EmployeeDetailsPage() {
   // Handler functions
   const handleBookmark = () => {
     if (employee) {
-      toggleBookmark(employee.id)
+      toggleBookmark(employee)
     }
   }
 
@@ -188,7 +187,7 @@ export default function EmployeeDetailsPage() {
                       onClick={handleBookmark}
                       className="h-9 px-3"
                     >
-                      <Bookmark className={cn("w-4 h-4", isBookmarked && "fill-black dark:fill-white")} />
+                      <Bookmark className={cn("w-4 h-4", isEmployeeBookmarked && "fill-black dark:fill-white")} />
                     </Button>
                     <Button
                       size="sm"
@@ -254,7 +253,7 @@ export default function EmployeeDetailsPage() {
                   onClick={handleBookmark}
                   className="h-9 px-4"
                 >
-                  <Bookmark className={cn("w-4 h-4 mr-2", isBookmarked && "fill-black dark:fill-white")} />
+                  <Bookmark className={cn("w-4 h-4 mr-2", isEmployeeBookmarked && "fill-black dark:fill-white")} />
                   Bookmark
                 </Button>
                 <Button

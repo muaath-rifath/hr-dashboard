@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { useEmployeeStore } from '@/lib/store'
+import { useState } from 'react'
+import { useEmployeeData, useBookmarks, useSearch, usePagination, useEmployeeActions, useEmployeeStats } from '@/hooks'
 import { EmployeeCard } from '@/components/employee-card'
 import { SearchBar } from '@/components/search-bar'
 import { Button } from '@/components/ui/button'
@@ -16,86 +15,46 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { Loader2, Users, Building2, Star, AlertCircle, Bookmark } from 'lucide-react'
-import { Employee } from '@/types'
 
 export function EmployeesList() {
-  const router = useRouter()
+  const [viewMode, setViewMode] = useState<'all' | 'bookmarked'>('all')
+
+  // Custom hooks
+  const { employees, loading, error, refreshData } = useEmployeeData()
+  const { bookmarkedEmployees, bookmarkStats, isBookmarked } = useBookmarks()
   const {
-    employees,
-    loading,
-    error,
     searchTerm,
     selectedDepartment,
     selectedPerformanceRating,
-    bookmarkedIds,
-    currentPage,
-    itemsPerPage,
-    setSearchTerm,
-    setSelectedDepartment,
-    setSelectedPerformanceRating,
-    setCurrentPage,
-    toggleBookmark,
-    fetchEmployeesData,
-    getFilteredEmployees
-  } = useEmployeeStore()
+    filteredEmployees,
+    searchStats,
+    handleSearchChange,
+    handleDepartmentChange,
+    handlePerformanceRatingChange,
+    handleClearFilters
+  } = useSearch()
+  const { handleEmployeeView, handleEmployeeBookmark, handleEmployeePromote } = useEmployeeActions()
+  const { activeDepartments, averageRating } = useEmployeeStats()
 
-  const [viewMode, setViewMode] = useState<'all' | 'bookmarked'>('all')
-
-  // Ensure bookmarkedIds is always a Set
-  const safeBookmarkedIds = bookmarkedIds instanceof Set ? bookmarkedIds : new Set()
-
-  // Memoize the fetch function to prevent re-renders
-  const fetchData = useCallback(() => {
-    fetchEmployeesData()
-  }, [fetchEmployeesData])
-
-  // Fetch employees on mount
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  // Get employees to display
-  const filteredEmployees = getFilteredEmployees()
+  // Get employees to display based on view mode
   const displayEmployees = viewMode === 'bookmarked' 
-    ? filteredEmployees.filter(emp => safeBookmarkedIds.has(emp.id))
+    ? bookmarkedEmployees
     : filteredEmployees
 
   // Pagination
-  const totalPages = Math.ceil(displayEmployees.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedEmployees = displayEmployees.slice(startIndex, startIndex + itemsPerPage)
+  const {
+    paginatedItems: paginatedEmployees,
+    paginationInfo,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    getPageNumbers
+  } = usePagination(displayEmployees)
 
-  const handleEmployeeView = (employee: Employee) => {
-    router.push(`/employee/${employee.id}`)
-  }
-
-  const handleEmployeeBookmark = (employee: Employee) => {
-    toggleBookmark(employee.id)
-  }
-
-  const handleEmployeePromote = (employee: Employee) => {
-    console.log('Promote employee:', employee)
-    // TODO: Implement promotion logic
-  }
-
-  const handleClearFilters = () => {
-    setSearchTerm('')
-    setSelectedDepartment(null)
-    setSelectedPerformanceRating(null)
-    setCurrentPage(1)
+  const handleClearFiltersAndMode = () => {
+    handleClearFilters()
     setViewMode('all')
   }
-
-  const handleRefresh = () => {
-    fetchData()
-  }
-
-  // Calculate stats
-  const totalBookmarked = Array.from(bookmarkedIds).length
-  const activeDepartments = new Set(employees.map(emp => emp.department)).size
-  const averageRating = employees.length > 0 
-    ? (employees.reduce((sum, emp) => sum + emp.performanceRating, 0) / employees.length).toFixed(1)
-    : 0
 
   return (
     <div className="w-full px-4 py-8 space-y-8">
@@ -108,7 +67,7 @@ export function EmployeesList() {
               Manage and view your organization&apos;s employees
             </p>
           </div>
-          <Button onClick={handleRefresh} disabled={loading}>
+          <Button onClick={refreshData} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Refresh
           </Button>
@@ -149,7 +108,7 @@ export function EmployeesList() {
               <Bookmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalBookmarked}</div>
+              <div className="text-2xl font-bold">{bookmarkStats.total}</div>
             </CardContent>
           </Card>
         </div>
@@ -159,12 +118,12 @@ export function EmployeesList() {
       <SearchBar
         searchTerm={searchTerm}
         selectedDepartment={selectedDepartment}
-        onSearchChange={setSearchTerm}
-        onDepartmentChange={setSelectedDepartment}
+        onSearchChange={handleSearchChange}
+        onDepartmentChange={handleDepartmentChange}
         onClearFilters={handleClearFilters}
         showPerformanceFilter={true}
         selectedPerformanceRating={selectedPerformanceRating}
-        onPerformanceRatingChange={setSelectedPerformanceRating}
+        onPerformanceRatingChange={handlePerformanceRatingChange}
       />
 
       {/* Loading State */}
@@ -188,7 +147,7 @@ export function EmployeesList() {
             <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleRefresh} variant="outline">
+            <Button onClick={refreshData} variant="outline">
               Try Again
             </Button>
           </CardContent>
@@ -215,7 +174,7 @@ export function EmployeesList() {
                     View All Employees
                   </Button>
                 ) : (
-                  <Button onClick={handleClearFilters} variant="outline">
+                  <Button onClick={handleClearFiltersAndMode} variant="outline">
                     Clear Filters
                   </Button>
                 )}
@@ -226,10 +185,10 @@ export function EmployeesList() {
               {/* Results info */}
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayEmployees.length)} of {displayEmployees.length} employees
+                  Showing {paginationInfo.startIndex}-{paginationInfo.endIndex} of {displayEmployees.length} employees
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {displayEmployees.length !== employees.length && `Filtered from ${employees.length} total`}
+                  {searchStats.isFiltered && `Filtered from ${searchStats.totalEmployees} total`}
                 </p>
               </div>
 
@@ -239,7 +198,7 @@ export function EmployeesList() {
                   <EmployeeCard
                     key={employee.id}
                     employee={employee}
-                    isBookmarked={safeBookmarkedIds.has(employee.id)}
+                    isBookmarked={isBookmarked(employee.id)}
                     onView={handleEmployeeView}
                     onBookmark={handleEmployeeBookmark}
                     onPromote={handleEmployeePromote}
@@ -248,45 +207,42 @@ export function EmployeesList() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {paginationInfo.hasPagination && (
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious 
                         onClick={(e) => {
                           e.preventDefault()
-                          if (currentPage > 1) setCurrentPage(currentPage - 1)
+                          goToPreviousPage()
                         }}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        className={!paginationInfo.canGoPrevious ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
                     
                     {/* Page numbers */}
-                    {Array.from({ length: totalPages }, (_, i) => {
-                      const pageNum = i + 1
-                      return (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault()
-                              setCurrentPage(pageNum)
-                            }}
-                            isActive={currentPage === pageNum}
-                            className="cursor-pointer"
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    })}
+                    {getPageNumbers().map((pageNum) => (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={(e) => {
+                            e.preventDefault()
+                            goToPage(pageNum)
+                          }}
+                          isActive={paginationInfo.currentPage === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
                     
                     <PaginationItem>
                       <PaginationNext 
                         onClick={(e) => {
                           e.preventDefault()
-                          if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                          goToNextPage()
                         }}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        className={!paginationInfo.canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
                   </PaginationContent>

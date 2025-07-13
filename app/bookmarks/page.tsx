@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useEmployeeStore } from '@/lib/store'
+import { useState } from 'react'
+import { useEmployeeData, useBookmarks, useEmployeeActions } from '@/hooks'
 import { EmployeeCard } from '@/components/employee-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,44 +17,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Bookmark, Users, Trash2 } from 'lucide-react'
-import { Employee } from '@/types'
 
 export default function BookmarksPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false)
-  const {
-    employees,
-    bookmarkedIds,
-    toggleBookmark,
-    clearBookmarks,
-    fetchEmployeesData
-  } = useEmployeeStore()
-
-  // Ensure bookmarkedIds is always a Set
-  const safeBookmarkedIds = bookmarkedIds instanceof Set ? bookmarkedIds : new Set()
-
-  // Fetch employees on mount if not loaded
-  useEffect(() => {
-    if (employees.length === 0) {
-      fetchEmployeesData()
-    }
-  }, [employees.length, fetchEmployeesData])
-
-  // Get bookmarked employees
-  const bookmarkedEmployees = employees.filter(emp => safeBookmarkedIds.has(emp.id))
-
-  const handleEmployeeView = (employee: Employee) => {
-    console.log('View employee:', employee)
-    // TODO: Implement employee detail modal/page
-  }
-
-  const handleEmployeeBookmark = (employee: Employee) => {
-    toggleBookmark(employee.id)
-  }
-
-  const handleEmployeePromote = (employee: Employee) => {
-    console.log('Promote employee:', employee)
-    // TODO: Implement promotion logic
-  }
+  
+  // Custom hooks
+  const { employees } = useEmployeeData()
+  const { bookmarkedEmployees, bookmarkStats, clearBookmarks } = useBookmarks()
+  const { handleEmployeeView, handleEmployeeBookmark, handleEmployeePromote } = useEmployeeActions()
 
   const handleClearAllBookmarks = () => {
     clearBookmarks()
@@ -75,7 +45,7 @@ export default function BookmarksPage() {
               Your saved employees for quick access
             </p>
           </div>
-          {bookmarkedEmployees.length > 0 && (
+          {bookmarkStats.hasBookmarks && (
             <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
               <AlertDialogTrigger asChild>
                 <Button 
@@ -114,7 +84,7 @@ export default function BookmarksPage() {
               <Bookmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{bookmarkedEmployees.length}</div>
+              <div className="text-2xl font-bold">{bookmarkStats.total}</div>
             </CardContent>
           </Card>
           <Card>
@@ -131,7 +101,7 @@ export default function BookmarksPage() {
 
       {/* Bookmarked Employees */}
       <div className="space-y-6">
-        {bookmarkedEmployees.length === 0 ? (
+        {!bookmarkStats.hasBookmarks ? (
           <Card>
             <CardHeader>
               <CardTitle className="text-center">No Bookmarked Employees</CardTitle>
@@ -150,7 +120,7 @@ export default function BookmarksPage() {
             {/* Results info */}
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {bookmarkedEmployees.length} bookmarked {bookmarkedEmployees.length === 1 ? 'employee' : 'employees'}
+                {bookmarkStats.total} bookmarked {bookmarkStats.total === 1 ? 'employee' : 'employees'}
               </p>
             </div>
 
