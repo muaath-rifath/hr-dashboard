@@ -255,3 +255,34 @@ export async function fetchEmployees(
     throw error
   }
 }
+
+/**
+ * Fetch a single user from DummyJSON API
+ */
+export async function fetchUserById(id: string): Promise<DummyUser> {
+  try {
+    const response = await fetch(`https://dummyjson.com/users/${id}`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const user: DummyUser = await response.json()
+    return user
+  } catch (error) {
+    console.error('Error fetching user from DummyJSON:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch a single employee by ID
+ */
+export async function fetchEmployeeById(id: string): Promise<Employee> {
+  try {
+    const user = await fetchUserById(id)
+    const employee = transformUserToEmployee(user)
+    return employee
+  } catch (error) {
+    console.error('[fetchEmployeeById] Error:', error)
+    throw error
+  }
+}

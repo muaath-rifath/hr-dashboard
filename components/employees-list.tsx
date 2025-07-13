@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useEmployeeStore } from '@/lib/store'
 import { EmployeeCard } from '@/components/employee-card'
 import { SearchBar } from '@/components/search-bar'
@@ -14,10 +15,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { Loader2, Users, Building2, Star, AlertCircle } from 'lucide-react'
-import { Employee, PerformanceRating } from '@/types'
+import { Loader2, Users, Building2, Star, AlertCircle, Bookmark } from 'lucide-react'
+import { Employee } from '@/types'
 
 export function EmployeesList() {
+  const router = useRouter()
   const {
     employees,
     loading,
@@ -64,8 +66,7 @@ export function EmployeesList() {
   const paginatedEmployees = displayEmployees.slice(startIndex, startIndex + itemsPerPage)
 
   const handleEmployeeView = (employee: Employee) => {
-    console.log('View employee:', employee)
-    // TODO: Implement employee detail modal/page
+    router.push(`/employee/${employee.id}`)
   }
 
   const handleEmployeeBookmark = (employee: Employee) => {
@@ -145,7 +146,7 @@ export function EmployeesList() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Bookmarked</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
+              <Bookmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalBookmarked}</div>

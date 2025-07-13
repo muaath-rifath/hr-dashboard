@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Employee, Department, PerformanceRating } from '@/types'
-import { fetchEmployees } from '@/lib/api'
+import { fetchEmployees, fetchEmployeeById } from '@/lib/api'
 
 interface EmployeeState {
   // Data
@@ -55,6 +55,7 @@ interface EmployeeActions {
   
   // API actions
   fetchEmployeesData: () => Promise<void>
+  fetchEmployeeById: (id: string) => Promise<Employee>
 }
 
 type EmployeeStore = EmployeeState & EmployeeActions
@@ -180,6 +181,17 @@ const useEmployeeStore = create<EmployeeStore>()(
           setError(errorMessage)
         } finally {
           setLoading(false)
+        }
+      },
+      
+      // Fetch single employee by ID
+      fetchEmployeeById: async (id: string) => {
+        try {
+          const employee = await fetchEmployeeById(id)
+          return employee
+        } catch (error) {
+          console.error('Error fetching employee by ID:', error)
+          throw error
         }
       }
     }),

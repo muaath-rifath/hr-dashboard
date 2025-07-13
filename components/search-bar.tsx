@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { Search, X, Star, Building2, User, Mail, Hash, TrendingUp } from "lucide-react"
+import { Search, X, Building2, User, Mail, Hash, TrendingUp } from "lucide-react"
 import { Department, PerformanceRating } from "@/types"
 import { useEmployeeStore } from "@/lib/store"
 
@@ -46,7 +46,7 @@ export function SearchBar({
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
   // Generate suggestions based on input
-  const generateSuggestions = (query: string): SearchSuggestion[] => {
+  const generateSuggestions = useCallback((query: string): SearchSuggestion[] => {
     if (!query || query.length < 2) return []
     
     const lowerQuery = query.toLowerCase()
@@ -112,14 +112,14 @@ export function SearchBar({
         return a.value.localeCompare(b.value)
       })
       .slice(0, 8)
-  }
+  }, [employees])
 
   // Update suggestions when search term changes
   useEffect(() => {
     const newSuggestions = generateSuggestions(localSearchTerm)
     setSuggestions(newSuggestions)
     setSelectedSuggestionIndex(-1)
-  }, [localSearchTerm, employees])
+  }, [localSearchTerm, generateSuggestions])
 
   // Sync local search term with prop changes (e.g., when filters are cleared)
   useEffect(() => {
