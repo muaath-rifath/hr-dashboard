@@ -7,6 +7,31 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, Users, Building2, Star, DollarSign } from 'lucide-react'
 import { Department } from '@/types'
 import { formatCurrency } from '@/lib/utils'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js'
+import { Bar, Line, Doughnut } from 'react-chartjs-2'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 export default function AnalyticsPage() {
   const { employees, loading, fetchEmployeesData } = useEmployeeStore()
@@ -102,6 +127,94 @@ export default function AnalyticsPage() {
     return colors[rating] || 'outline'
   }
 
+  // Chart data configurations
+  const departmentChartData = useMemo(() => ({
+    labels: analytics.departmentStats.map(dept => dept.department),
+    datasets: [
+      {
+        label: 'Employee Count',
+        data: analytics.departmentStats.map(dept => dept.count),
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 205, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(255, 205, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  }), [analytics.departmentStats])
+
+  const performanceChartData = useMemo(() => ({
+    labels: analytics.performanceStats.map(perf => `${perf.rating} Star${perf.rating !== 1 ? 's' : ''}`),
+    datasets: [
+      {
+        label: 'Performance Distribution',
+        data: analytics.performanceStats.map(perf => perf.count),
+        backgroundColor: [
+          'rgba(239, 68, 68, 0.6)',
+          'rgba(245, 158, 11, 0.6)',
+          'rgba(59, 130, 246, 0.6)',
+          'rgba(16, 185, 129, 0.6)',
+          'rgba(34, 197, 94, 0.6)',
+        ],
+        borderColor: [
+          'rgba(239, 68, 68, 1)',
+          'rgba(245, 158, 11, 1)',
+          'rgba(59, 130, 246, 1)',
+          'rgba(16, 185, 129, 1)',
+          'rgba(34, 197, 94, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  }), [analytics.performanceStats])
+
+  // Mock trend data for demonstration
+  const trendData = useMemo(() => ({
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'New Hires',
+        data: [12, 8, 15, 10, 18, 14],
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1,
+      },
+      {
+        label: 'Performance Reviews',
+        data: [25, 30, 28, 35, 32, 38],
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        tension: 0.1,
+      },
+    ],
+  }), [])
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  }
+
   return (
     <div className="w-full px-4 py-8 space-y-8">
       {/* Page Header */}
@@ -163,6 +276,49 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Charts Section - Moved to top */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Department Distribution Chart</CardTitle>
+                <CardDescription>Visual representation of employee count by department</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Bar data={departmentChartData} options={chartOptions} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Rating Distribution</CardTitle>
+                <CardDescription>Employee performance ratings breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Doughnut 
+                  data={performanceChartData} 
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'bottom' as const,
+                      },
+                    },
+                  }} 
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>HR Trends</CardTitle>
+              <CardDescription>Monthly trends for hiring and performance reviews</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Line data={trendData} options={chartOptions} />
+            </CardContent>
+          </Card>
 
           {/* Department Distribution */}
           <Card>
