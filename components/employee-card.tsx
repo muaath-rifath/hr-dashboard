@@ -98,7 +98,7 @@ export function EmployeeCard({
           className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
         >
           <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-          View
+          <span className="hidden sm:inline">View</span>
         </Button>
         <Button
           size="sm"

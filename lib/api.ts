@@ -223,8 +223,7 @@ export async function fetchEmployees(
   department?: Department
 ): Promise<{ employees: Employee[], total: number, page: number, limit: number }> {
   try {
-    console.log('[fetchEmployees] Fetching from DummyJSON API')
-    const users = await fetchUsers(30) // Fetch more users for filtering
+    const users = await fetchUsers(20) // Fetch exactly 20 users
     let employees = users.map(transformUserToEmployee)
     
     // Apply filters

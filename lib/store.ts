@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Employee, Department } from '@/types'
+import type { Employee, Department, PerformanceRating } from '@/types'
 import { fetchEmployees } from '@/lib/api'
 
 interface EmployeeState {
@@ -15,6 +15,7 @@ interface EmployeeState {
   // Search and Filters
   searchTerm: string
   selectedDepartment: Department | null
+  selectedPerformanceRating: PerformanceRating | null
   
   // Pagination
   currentPage: number
@@ -40,6 +41,7 @@ interface EmployeeActions {
   // Search and filter actions
   setSearchTerm: (term: string) => void
   setSelectedDepartment: (department: Department | null) => void
+  setSelectedPerformanceRating: (rating: PerformanceRating | null) => void
   clearFilters: () => void
   
   // Pagination actions
@@ -67,6 +69,7 @@ const useEmployeeStore = create<EmployeeStore>()(
       error: null,
       searchTerm: '',
       selectedDepartment: null,
+      selectedPerformanceRating: null,
       currentPage: 1,
       itemsPerPage: 12,
       totalEmployees: 0,
@@ -117,7 +120,8 @@ const useEmployeeStore = create<EmployeeStore>()(
       // Search and filter actions
       setSearchTerm: (searchTerm) => set({ searchTerm, currentPage: 1 }),
       setSelectedDepartment: (selectedDepartment) => set({ selectedDepartment, currentPage: 1 }),
-      clearFilters: () => set({ searchTerm: '', selectedDepartment: null, currentPage: 1 }),
+      setSelectedPerformanceRating: (selectedPerformanceRating) => set({ selectedPerformanceRating, currentPage: 1 }),
+      clearFilters: () => set({ searchTerm: '', selectedDepartment: null, selectedPerformanceRating: null, currentPage: 1 }),
       
       // Pagination actions
       setCurrentPage: (currentPage) => set({ currentPage }),
@@ -131,7 +135,7 @@ const useEmployeeStore = create<EmployeeStore>()(
       },
       
       getFilteredEmployees: () => {
-        const { employees, searchTerm, selectedDepartment } = get()
+        const { employees, searchTerm, selectedDepartment, selectedPerformanceRating } = get()
         let filtered = employees
         
         // Apply search filter
@@ -150,23 +154,24 @@ const useEmployeeStore = create<EmployeeStore>()(
           filtered = filtered.filter(emp => emp.department === selectedDepartment)
         }
         
+        // Apply performance rating filter
+        if (selectedPerformanceRating) {
+          filtered = filtered.filter(emp => emp.performanceRating === selectedPerformanceRating)
+        }
+        
         return filtered
       },
       
       // API actions
       fetchEmployeesData: async () => {
-        const { setLoading, setError, setEmployees, setTotalEmployees, currentPage, itemsPerPage, searchTerm, selectedDepartment } = get()
+        const { setLoading, setError, setEmployees, setTotalEmployees } = get()
         
         try {
           setLoading(true)
           setError(null)
           
-          const result = await fetchEmployees(
-            currentPage,
-            itemsPerPage,
-            searchTerm || undefined,
-            selectedDepartment || undefined
-          )
+          // Force fetch 20 employees regardless of pagination
+          const result = await fetchEmployees(1, 20)
           
           setEmployees(result.employees)
           setTotalEmployees(result.total)
@@ -179,11 +184,12 @@ const useEmployeeStore = create<EmployeeStore>()(
       }
     }),
     {
-      name: 'employee-store',
+      name: 'employee-store-fresh', // Completely new cache name
       partialize: (state) => ({
         bookmarkedIds: Array.from(state.bookmarkedIds), // Convert Set to Array for serialization
         searchTerm: state.searchTerm,
         selectedDepartment: state.selectedDepartment,
+        selectedPerformanceRating: state.selectedPerformanceRating,
         itemsPerPage: state.itemsPerPage
       }),
       merge: (persistedState, currentState) => ({

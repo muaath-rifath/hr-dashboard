@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { Search, X, Star, Building2, User, Mail, Hash } from "lucide-react"
-import { Department } from "@/types"
+import { Search, X, Star, Building2, User, Mail, Hash, TrendingUp } from "lucide-react"
+import { Department, PerformanceRating } from "@/types"
 import { useEmployeeStore } from "@/lib/store"
 
 interface SearchBarProps {
@@ -15,9 +15,9 @@ interface SearchBarProps {
   onSearchChange: (value: string) => void
   onDepartmentChange: (value: Department | null) => void
   onClearFilters: () => void
-  showBookmarkFilter?: boolean
-  showBookmarkedOnly?: boolean
-  onBookmarkFilterChange?: (value: boolean) => void
+  showPerformanceFilter?: boolean
+  selectedPerformanceRating?: PerformanceRating | null
+  onPerformanceRatingChange?: (value: PerformanceRating | null) => void
 }
 
 interface SearchSuggestion {
@@ -33,9 +33,9 @@ export function SearchBar({
   onSearchChange,
   onDepartmentChange,
   onClearFilters,
-  showBookmarkFilter = false,
-  showBookmarkedOnly = false,
-  onBookmarkFilterChange
+  showPerformanceFilter = false,
+  selectedPerformanceRating = null,
+  onPerformanceRatingChange
 }: SearchBarProps) {
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm)
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -189,7 +189,8 @@ export function SearchBar({
   }
 
   const departments = Object.values(Department)
-  const hasActiveFilters = searchTerm || selectedDepartment || (showBookmarkFilter && showBookmarkedOnly)
+  const performanceRatings: PerformanceRating[] = [1, 2, 3, 4, 5]
+  const hasActiveFilters = searchTerm || selectedDepartment || (showPerformanceFilter && selectedPerformanceRating)
 
   return (
     <Card className="p-6">
@@ -273,27 +274,31 @@ export function SearchBar({
               </Select>
             </div>
 
-            {/* Right side - Show Filter and Clear Button */}
+            {/* Right side - Performance Rating Filter and Clear Button */}
             <div className="flex items-center gap-4">
-              {/* Show Filter */}
-              {showBookmarkFilter && onBookmarkFilterChange && (
+              {/* Performance Rating Filter */}
+              {showPerformanceFilter && onPerformanceRatingChange && (
                 <div className="flex items-center gap-3">
-                  <Star className="w-5 h-5 text-muted-foreground" />
+                  <TrendingUp className="w-5 h-5 text-muted-foreground" />
                   <label className="text-sm font-medium text-muted-foreground whitespace-nowrap hidden sm:block">
-                    Show:
+                    Rating:
                   </label>
                   <Select
-                    value={showBookmarkedOnly ? "bookmarked" : "all"}
+                    value={selectedPerformanceRating?.toString() || "all"}
                     onValueChange={(value: string) => 
-                      onBookmarkFilterChange(value === "bookmarked")
+                      onPerformanceRatingChange(value === "all" ? null : parseInt(value) as PerformanceRating)
                     }
                   >
                     <SelectTrigger className="w-[100px] sm:w-[160px] h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All employees</SelectItem>
-                      <SelectItem value="bookmarked">Bookmarked only</SelectItem>
+                      <SelectItem value="all">All ratings</SelectItem>
+                      {performanceRatings.map((rating) => (
+                        <SelectItem key={rating} value={rating.toString()}>
+                          {rating} Star{rating !== 1 ? 's' : ''}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
