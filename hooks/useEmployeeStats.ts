@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useEmployeeStore } from '@/lib/store'
-import { Employee } from '@/types'
 
 /**
  * Custom hook for calculating employee statistics

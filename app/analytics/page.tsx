@@ -105,17 +105,6 @@ export default function AnalyticsPage() {
     }
   }, [employees])
 
-  const getRatingLabel = (rating: number) => {
-    const labels: Record<number, string> = {
-      1: 'Poor',
-      2: 'Below Average',
-      3: 'Average',
-      4: 'Above Average',
-      5: 'Excellent'
-    }
-    return labels[rating] || 'Unknown'
-  }
-
   const getRatingColor = (rating: number) => {
     const colors: Record<number, string> = {
       1: 'destructive',
@@ -238,7 +227,7 @@ export default function AnalyticsPage() {
       {!loading && (
         <>
           {/* Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
@@ -327,25 +316,25 @@ export default function AnalyticsPage() {
               <CardDescription>Employee count by department</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {analytics.departmentStats.map((dept) => (
-                  <div key={dept.department} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{dept.department}</Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {dept.count} employees
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 bg-secondary rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full"
-                          style={{ width: `${dept.percentage}%` }}
-                        />
+                  <div key={dept.department} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">{dept.department}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {dept.count} employee{dept.count !== 1 ? 's' : ''}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium w-12 text-right">
+                      <span className="text-sm font-medium tabular-nums">
                         {dept.percentage.toFixed(1)}%
                       </span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out"
+                        style={{ width: `${Math.min(dept.percentage, 100)}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -360,27 +349,27 @@ export default function AnalyticsPage() {
               <CardDescription>Employee performance ratings breakdown</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {analytics.performanceStats.map((perf) => (
-                  <div key={perf.rating} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={getRatingColor(perf.rating) as "default" | "secondary" | "destructive" | "outline"}>
-                        {perf.rating} Star{perf.rating !== 1 ? 's' : ''}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {getRatingLabel(perf.rating)} - {perf.count} employees
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 bg-secondary rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full"
-                          style={{ width: `${perf.percentage}%` }}
-                        />
+                  <div key={perf.rating} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getRatingColor(perf.rating) as "default" | "secondary" | "destructive" | "outline"}>
+                          {perf.rating} Star{perf.rating !== 1 ? 's' : ''}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {perf.count} employee{perf.count !== 1 ? 's' : ''}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium w-12 text-right">
+                      <span className="text-sm font-medium tabular-nums">
                         {perf.percentage.toFixed(1)}%
                       </span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out"
+                        style={{ width: `${Math.min(perf.percentage, 100)}%` }}
+                      />
                     </div>
                   </div>
                 ))}

@@ -1,11 +1,12 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Eye, Bookmark, TrendingUp, MapPin, DollarSign, Star } from "lucide-react"
+import { Eye, Bookmark, TrendingUp, MapPin, DollarSign, Star} from "lucide-react"
 import { Employee } from "@/types"
 import { formatCurrency, getFullName, getInitials } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { SkillsSection } from "./skills-section"
+import Link from "next/link"
 
 interface EmployeeCardProps {
   employee: Employee
@@ -42,7 +43,9 @@ export function EmployeeCard({
         <div className="space-y-1">
           <h3 className="font-bold text-base sm:text-lg text-center">{fullName}</h3>
           <p className="text-sm sm:text-base font-medium text-primary">{employee.department}</p>
-          <p className="text-xs sm:text-sm text-muted-foreground truncate">{employee.email}</p>
+          <Link href={`mailto:${employee.email}`}>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{employee.email}</p>
+          </Link>
         </div>
       </CardHeader>
 

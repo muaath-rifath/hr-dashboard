@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+<div>
+  <img src="public/screenshot1.png" alt="Desktop Screenshot 1" width="800">
+</div>
+
+<div>
+  <img src="public/screenshot2.png" alt="Desktop Screenshot 2" width="800">
+</div>
+
+<div style="display: inline-block; margin-right: 20px;">
+  <img src="public/screenshot3.png" alt="Mobile Screenshot 3" width="300">
+</div>
+
+<div style="display: inline-block;">
+  <img src="public/screenshot4.png" alt="Mobile Screenshot 4" width="300">
+</div>
+
 ## Getting Started
 
 First, run the development server:
