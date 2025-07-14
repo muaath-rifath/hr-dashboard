@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Live Demo
+
+🚀 **[View Live Demo](https://hr-dashboard-green-nine.vercel.app/)**
+
+Experience the HR Dashboard in action! Click the link above to access the live deployment and explore all the features.
+
 <div style="margin-bottom: 20px;">
   <img src="./public/screenshot1.png" alt="Desktop Screenshot 1" width="800" style="max-width: 100%; height: auto;">
 </div>
